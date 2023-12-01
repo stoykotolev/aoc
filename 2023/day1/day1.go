@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 	"unicode"
 
@@ -32,7 +31,7 @@ var spelledNumbers = []string{
 func main() {
 
 	inputContents := utils.ReadFile("./input.txt")
-	// part1(inputContents)
+	part1(inputContents)
 	part2(inputContents)
 
 }
@@ -42,29 +41,15 @@ func part1(contents []string) {
 	total := 0
 
 	for _, line := range contents {
-		var digits []rune
+		var digits []int
 		for _, char := range line {
 			if unicode.IsDigit(char) {
-				digits = append(digits, char)
+				digits = append(digits, int(char-'0'))
 			}
 		}
-
-		digitsLen := len(digits)
-
-		if digitsLen > 1 {
-			twoDigit := string(digits[0]) + string(digits[digitsLen-1])
-			num, err := strconv.Atoi(twoDigit)
-			check(err)
-			total = total + num
-		} else {
-			twoDigit := string(digits[0]) + string(digits[0])
-			num, err := strconv.Atoi(twoDigit)
-			check(err)
-			total = total + num
-		}
-
+		total = total + (digits[0]*10 + digits[len(digits)-1])
 	}
-	fmt.Println(total)
+	fmt.Printf("Part 1 %d\n", total)
 }
 
 func part2(contents []string) {
@@ -77,7 +62,7 @@ func part2(contents []string) {
 		curr := first*10 + num
 		total = total + curr
 	}
-	fmt.Println(total)
+	fmt.Printf("Part 2 %d\n", total)
 }
 
 func findFirst(input string) (int, error) {

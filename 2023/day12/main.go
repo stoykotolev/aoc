@@ -5,6 +5,8 @@ import (
 	"stoykotolev/aoc-2023/utils"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -34,27 +36,13 @@ func part1(springsMap []string, groups [][]uint8) {
 		currentSpringMap := springsMap[i]
 		springMapConditionRecord := groups[i]
 
-		total += countVariants(currentSpringMap, springMapConditionRecord)
+		var cache = make(map[state]int)
+		total += countVariants(currentSpringMap, springMapConditionRecord, cache)
 	}
 
 	fmt.Println(total)
 	fmt.Println(time.Since(start))
 
-}
-func part2(springsMap []string, groups [][]uint8) {
-	start := time.Now()
-	total := 0
-
-	for i := range springsMap {
-		currentSpringMap := unfoldSpringMap(springsMap[i])
-		springMapConditionRecord := unfoldRecordGroup(groups[i])
-		currentSpringMapTotal := countVariants(currentSpringMap, springMapConditionRecord)
-
-		total += currentSpringMapTotal
-	}
-
-	fmt.Println(total)
-	fmt.Println(time.Since(start))
 }
 
 type state struct {
@@ -62,10 +50,49 @@ type state struct {
 	records       string
 }
 
-var cache = make(map[state]int)
+type job struct {
+	index           int
+	springMap       string
+	springMapGroups []uint8
+}
 
-func countVariants(configuration string, records []uint8) int {
+func part2(springsMap []string, groups [][]uint8) {
+	start := time.Now()
+	var total atomic.Int64
 
+	var wg sync.WaitGroup
+	const numJobs = 10
+	jobs := make(chan job, len(springsMap))
+
+	for i := 0; i < numJobs; i++ {
+		wg.Add(1)
+		go worker(i, jobs, &wg, &total)
+	}
+
+	for i := range springsMap {
+		jobs <- job{i, springsMap[i], groups[i]}
+	}
+	close(jobs)
+
+	wg.Wait()
+
+	fmt.Println(total.Load())
+	fmt.Println(time.Since(start))
+}
+
+func worker(id int, jobs <-chan job, wg *sync.WaitGroup, total *atomic.Int64) {
+	defer wg.Done()
+	for j := range jobs {
+		var cache = make(map[state]int)
+		currentSpringMap := unfoldSpringMap(j.springMap)
+		springMapConditionRecord := unfoldRecordGroup(j.springMapGroups)
+		currentSpringMapTotal := countVariants(currentSpringMap, springMapConditionRecord, cache)
+
+		total.Add(int64(currentSpringMapTotal))
+	}
+}
+
+func countVariants(configuration string, records []uint8, cache map[state]int) int {
 	if len(configuration) == 0 {
 		if len(records) == 0 {
 			return 1
@@ -87,7 +114,7 @@ func countVariants(configuration string, records []uint8) int {
 	result := 0
 
 	if configuration[0] == '.' || configuration[0] == '?' {
-		result += countVariants(configuration[1:], records)
+		result += countVariants(configuration[1:], records, cache)
 	}
 
 	confLength := uint8(len(configuration))
@@ -96,9 +123,9 @@ func countVariants(configuration string, records []uint8) int {
 			!strings.Contains(configuration[:records[0]], ".") &&
 			(records[0] == confLength || configuration[records[0]] != '#') {
 			if records[0]+1 < confLength {
-				result += countVariants(configuration[records[0]+1:], records[1:])
+				result += countVariants(configuration[records[0]+1:], records[1:], cache)
 			} else {
-				result += countVariants("", records[1:])
+				result += countVariants("", records[1:], cache)
 			}
 		}
 	}

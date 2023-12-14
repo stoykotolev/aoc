@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"stoykotolev/aoc-2023/utils"
+	"time"
 )
 
 func main() {
@@ -17,13 +18,16 @@ func main() {
 }
 
 func part1(grid [][]byte) {
+	start := time.Now()
 	moveN(grid)
 	total := countRocks(grid)
 
 	fmt.Println(total)
+	fmt.Println(time.Since(start))
 }
 
 func part2(grid [][]byte) {
+	start := time.Now()
 	gridCache := make(map[string]int)
 	totalCycles := 1000000000
 	for i := 0; i < totalCycles; i++ {
@@ -39,6 +43,7 @@ func part2(grid [][]byte) {
 	}
 
 	fmt.Println(countRocks(grid))
+	fmt.Println(time.Since(start))
 }
 
 func constructGrid(input []string) [][]byte {

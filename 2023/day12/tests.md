@@ -62,4 +62,34 @@ Running test 5
 51456609952403
 21.376875ms
 
-### Test 3 - multi thread / atomic counter / global cache. 5 runs
+### Test 3 - single thread / global cache. 5 runs
+
+Running test 1
+6949
+3.660416ms
+51456609952403
+87.60075ms
+
+Running test 2
+6949
+2.711834ms
+51456609952403
+92.026542ms
+
+Running test 3
+6949
+2.850084ms
+51456609952403
+84.722375ms
+
+Running test 4
+6949
+3.966042ms
+51456609952403
+84.296208ms
+
+Running test 5
+6949
+3.471584ms
+51456609952403
+84.094584ms

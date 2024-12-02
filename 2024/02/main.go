@@ -22,6 +22,7 @@ func main() {
 		levels = append(levels, level)
 	}
 	part1(levels)
+	part2(levels)
 }
 
 func part1(levels [][]int) {
@@ -36,74 +37,65 @@ func part1(levels [][]int) {
 	fmt.Println(safeLevels)
 }
 
-func isSafe(level []int) bool {
+func part2(levels [][]int) {
+	sl := 0
 
-	for i := 1; i < len(level); i++ {
+	for _, l := range levels {
 
-		if !isLevelSingleType(level) {
-			return false
+		if isSafeDampener(l) {
+			sl += 1
 		}
 
-		diff := (level[i] - level[i-1])
-
-		if diff < 0 {
-			diff = diff * -1
-		}
-
-		if diff < 1 || diff > 3 {
-			return false
-		}
 	}
-
-	return true
+	fmt.Println(sl)
 }
 
-func isLevelSingleType(level []int) bool {
-
-	isAscending := true
-
-	if level[0] > level[1] {
-		isAscending = false
+func isSafeDampener(l []int) bool {
+	if isSafe(l) {
+		return true
 	}
 
-	dampen := true
-	for i := 1; i < len(level); i++ {
-		if level[i] == level[i-1] {
-			if dampen {
-				dampen = false
-				continue
-			}
-			return false
-		}
-		if isAscending {
-			if level[i] < level[i-1] {
-				if dampen {
-					dampen = false
-					continue
-				}
-				return false
-			}
-		} else {
-			if level[i] > level[i-1] {
-				if dampen {
-					dampen = false
-					continue
-				}
-				return false
-			}
-		}
-
-	}
-
-	return true
-}
-
-func hasRepeatedElements(level []int) bool {
-	for i := 1; i < len(level); i++ {
-		if level[i] == level[i-1] {
+	for i := range l {
+		temp := []int{}
+		temp = append(temp, l[:i]...)
+		temp = append(temp, l[i+1:]...)
+		if isSafe(temp) {
 			return true
 		}
 	}
 
 	return false
+}
+
+func isSafe(l []int) bool {
+
+	ls := 0
+	for i := 0; i < len(l)-1; i++ {
+		diff := l[i] - l[i+1]
+		if isAsc(l) {
+			if diff <= -1 && diff >= -3 {
+				ls++
+			}
+		} else {
+			if diff >= 1 && diff <= 3 {
+				ls++
+			}
+		}
+	}
+
+	if ls == len(l)-1 {
+		return true
+	}
+	return false
+
+}
+
+func isAsc(l []int) bool {
+	for i := 0; i < len(l)-1; i++ {
+		if l[i] > l[i+1] {
+			return false
+		}
+	}
+
+	return true
 }

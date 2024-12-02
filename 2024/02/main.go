@@ -46,10 +46,6 @@ func isSafe(level []int) bool {
 
 		diff := (level[i] - level[i-1])
 
-		if diff == 0 {
-			return false
-		}
-
 		if diff < 0 {
 			diff = diff * -1
 		}
@@ -70,13 +66,29 @@ func isLevelSingleType(level []int) bool {
 		isAscending = false
 	}
 
+	dampen := true
 	for i := 1; i < len(level); i++ {
+		if level[i] == level[i-1] {
+			if dampen {
+				dampen = false
+				continue
+			}
+			return false
+		}
 		if isAscending {
 			if level[i] < level[i-1] {
+				if dampen {
+					dampen = false
+					continue
+				}
 				return false
 			}
 		} else {
 			if level[i] > level[i-1] {
+				if dampen {
+					dampen = false
+					continue
+				}
 				return false
 			}
 		}
